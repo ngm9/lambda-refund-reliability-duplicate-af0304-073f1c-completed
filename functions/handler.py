@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 import boto3
+from boto3.dynamodb.conditions import Attr
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s %(levelname)s %(message)s")
@@ -58,7 +59,27 @@ def _validate_refund(payload):
     }
 
 
+def _already_settled(refund_id):
+    response = ledger.scan(
+        FilterExpression=Attr("refund_id").eq(refund_id),
+        ProjectionExpression="refund_id, settlement_id, status"
+    )
+    for item in response.get("Items", []):
+        if item.get("status") == "SETTLED":
+            return True
+    return False
+
+
 def _settle_refund(refund, message_id):
+    if _already_settled(refund["refund_id"]):
+        logger.warning(
+            "duplicate refund_id=%s message_id=%s correlation_id=%s rejected",
+            refund["refund_id"],
+            message_id,
+            refund.get("correlation_id", ""),
+        )
+        return None
+
     delay_ms = refund.get("processing_delay_ms", 0)
     if delay_ms:
         time.sleep(min(delay_ms / 1000.0, 6.0))
@@ -104,7 +125,13 @@ def _settle_refund(refund, message_id):
         }
     )
 
-    logger.info("settled refund message %s", message_id)
+    logger.info(
+        "settled refund_id=%s settlement_id=%s message_id=%s correlation_id=%s",
+        refund["refund_id"],
+        settlement_id,
+        message_id,
+        refund.get("correlation_id", ""),
+    )
     return settlement_id
 
 
@@ -115,10 +142,20 @@ def lambda_handler(event, context):
     processed = []
     for record in records:
         message_id = record.get("messageId", "unknown")
-        payload = json.loads(record.get("body", "{}"))
-        refund = _validate_refund(payload)
-        settlement_id = _settle_refund(refund, message_id)
-        processed.append(settlement_id)
+        body = record.get("body", "{}")
+        try:
+            payload = json.loads(body)
+            refund = _validate_refund(payload)
+            settlement_id = _settle_refund(refund, message_id)
+            if settlement_id:
+                processed.append(settlement_id)
+        except Exception:
+            logger.exception(
+                "invalid refund payload message_id=%s body=%s",
+                message_id,
+                body,
+            )
+            raise
 
     logger.info("completed batch with %s settlements", len(processed))
     return {"processed": len(processed), "settlement_ids": processed}
