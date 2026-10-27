@@ -1,0 +1,11 @@
+{
+  "refund_id": "rfd-2024-1001",
+  "order_id": "ord-2024-71001",
+  "customer_account_id": "acct-market-4811",
+  "amount_cents": 4299,
+  "currency": "USD",
+  "reason": "item_not_received",
+  "requested_at": "2024-05-12T14:30:00Z",
+  "correlation_id": "corr-rfd-1001-a",
+  "processing_delay_ms": 250
+}

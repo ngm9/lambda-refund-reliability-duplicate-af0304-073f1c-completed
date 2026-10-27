@@ -1,0 +1,11 @@
+{
+  "refund_id": "rfd-2024-1002",
+  "order_id": "ord-2024-71002",
+  "customer_account_id": "acct-market-4822",
+  "amount_cents": 1899,
+  "currency": "USD",
+  "reason": "duplicate_charge",
+  "requested_at": "2024-05-12T14:31:00Z",
+  "correlation_id": "corr-rfd-1002-b",
+  "processing_delay_ms": 250
+}

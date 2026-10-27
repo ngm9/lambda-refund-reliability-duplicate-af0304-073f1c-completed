@@ -1,0 +1,9 @@
+{
+  "order_id": "ord-2024-79999",
+  "customer_account_id": "acct-market-4000",
+  "amount_cents": -1250,
+  "currency": "USD",
+  "reason": "invalid_adjustment",
+  "requested_at": "2024-05-12T14:32:00Z",
+  "correlation_id": "corr-rfd-malformed"
+}

@@ -1,0 +1,11 @@
+{
+  "refund_id": "rfd-2024-1999",
+  "order_id": "ord-2024-71999",
+  "customer_account_id": "acct-market-4999",
+  "amount_cents": 7599,
+  "currency": "USD",
+  "reason": "carrier_returned_item",
+  "requested_at": "2024-05-12T14:35:00Z",
+  "correlation_id": "corr-rfd-1999-slow",
+  "processing_delay_ms": 5000
+}
