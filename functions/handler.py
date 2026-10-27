@@ -62,7 +62,8 @@ def _validate_refund(payload):
 def _already_settled(refund_id):
     response = ledger.scan(
         FilterExpression=Attr("refund_id").eq(refund_id),
-        ProjectionExpression="refund_id, settlement_id, status"
+        ProjectionExpression="refund_id, settlement_id, #st",
+        ExpressionAttributeNames={"#st": "status"}
     )
     for item in response.get("Items", []):
         if item.get("status") == "SETTLED":
